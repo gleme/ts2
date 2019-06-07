@@ -1,8 +1,6 @@
 /* eslint-disable */
 const withLess = require('@zeit/next-less');
 const lessToJS = require('less-vars-to-js');
-const webpack = require('webpack');
-const { parsed: localEnv } = require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
@@ -17,12 +15,9 @@ if (typeof require !== 'undefined') {
 
 module.exports = () => {
   return withLess({
-    webpack(config) {
-      config.plugins.push(new webpack.EnvironmentPlugin(localEnv));
-      return config;
-    },
     lessLoaderOptions: {
       javascriptEnabled: true,
+      ignoreOrder: true,
       modifyVars: themeVariables // make your antd custom effective
     }
   });
