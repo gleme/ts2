@@ -1,8 +1,8 @@
 import { Component, Fragment } from 'react';
 import { Typography, Modal, Button, message } from 'antd';
 import LoadingSpinner from '../../components/feedback/LoadingSpinner';
-import ConsultationForm from './Form';
-import ConsultationList from './List';
+import ConsultationForm from '../../components/consultation/Form';
+import ConsultationList from '../../components/consultation/List';
 import consultationService from '../../services/consultation';
 const { Title } = Typography;
 
