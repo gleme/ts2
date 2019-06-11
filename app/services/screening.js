@@ -8,3 +8,10 @@ export async function findQuestions() {
     throw error;
   }
 }
+
+export async function createScreening(screening) {
+  try {
+    const { data } = await axios.post('/screening', screening);
+    return data;
+  } catch (error) {}
+}
