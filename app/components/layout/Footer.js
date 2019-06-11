@@ -7,7 +7,6 @@ export default function footer() {
     <Footer
       style={{
         textAlign: 'center',
-        width: '100%',
         flexShrink: '0'
       }}
     >

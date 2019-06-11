@@ -17,12 +17,16 @@ class MedicalConsultation {
     date: Date,
     prescription: string,
     patient: Patient,
-    physician: Physician
+    physician: Physician,
+    procedures: MedicalProcedure[],
+    diagnosis: MedicalDiagnosis[]
   ) {
     this.date = date;
     this.prescription = prescription;
     this.patient = patient;
     this.physician = physician;
+    this.procedures = procedures;
+    this.diagnosis = diagnosis;
   }
 }
 

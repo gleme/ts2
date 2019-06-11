@@ -11,11 +11,15 @@ module.exports = new EntitySchema({
       generated: true
     },
     date: {
-      type: 'date'
+      type: 'varchar',
+      length: 127
     },
     prescription: {
       type: 'varchar',
       length: 255
+    },
+    diagnosis: {
+      type: 'json'
     }
   },
   relations: {
