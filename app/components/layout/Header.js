@@ -6,16 +6,15 @@ const MenuItem = Menu.Item;
 export default function header() {
   return (
     <Header>
-      <div className="logo" />
       <Menu
-        theme="dark"
+        theme="light"
         mode="horizontal"
         defaultSelectedKeys={['2']}
         style={{ lineHeight: '64px' }}
       >
-        <MenuItem key="1">Nav 1</MenuItem>
-        <MenuItem key="2">Nav 2</MenuItem>
-        <MenuItem key="3">Nav 3</MenuItem>
+        <MenuItem key="1">Home</MenuItem>
+        <MenuItem key="2">Project</MenuItem>
+        <MenuItem key="3">About</MenuItem>
       </Menu>
     </Header>
   );
