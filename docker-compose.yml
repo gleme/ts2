@@ -12,15 +12,15 @@ services:
     ports:
       - 3326:3306
 
-  mongodb:
-    image: mongo
-    restart: always
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-      - MONGO_INITDB_DATABASE=stagiop
-    ports:
-      - 27017:27017
+  # mongodb:
+  #   image: mongo
+  #   restart: always
+  #   environment:
+  #     - MONGO_INITDB_ROOT_USERNAME=root
+  #     - MONGO_INITDB_ROOT_PASSWORD=root
+  #     - MONGO_INITDB_DATABASE=stagiop
+  #   ports:
+  #     - 27017:27017
 
   nginx:
     restart: always
@@ -36,7 +36,6 @@ services:
   api:
     depends_on:
       - mysql
-      - mongodb
     build:
       dockerfile: Dockerfile.dev
       context: ./api
@@ -55,11 +54,8 @@ services:
       - TYPEORM_SYNCHRONIZE=true
       - TYPEORM_ENTITIES=src/domain/entity/*.js
       - TYPEORM_LOGGING=true
-      - MONGODB_USERNAME=root
-      - MONGODB_PASSWORD=root
-      - MONGODB_DATABASE=admin
-      - MONGODB_HOST=mongodb
-      - MONGODB_PORT=27017
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_HOST=${MONGODB_HOST}
     ports:
       - 5000:5000
 
@@ -71,4 +67,4 @@ services:
       context: ./app
     volumes:
       - ./app:/usr/ts2/app
-      - /usr/ts2/api/node_modules
+      - /usr/ts2/app/node_modules
