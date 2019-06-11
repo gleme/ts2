@@ -25,10 +25,8 @@ const columns = [
   }
 ];
 
-export default class DiagnosisResults extends Component {
-  onChange = (pagination, filters, sorter) => {
-    console.log('params', pagination, filters, sorter);
-  };
+export default class DiagnosisList extends Component {
+  onChange = (pagination, filters, sorter) => {};
 
   render() {
     const { results } = this.props;
