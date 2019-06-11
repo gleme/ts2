@@ -1,5 +1,7 @@
 const express = require('express');
+const { Between } = require('typeorm');
 const { pickBy, identity } = require('lodash');
+const moment = require('moment');
 const router = express.Router();
 const { MedicalConsultation } = require('../../domain/model/medical-consultation');
 const { injectRepository } = require('../../middlewares/repository');
@@ -41,13 +43,37 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const { cpf, expand } = req.query;
+    const { cpf, expand, start, end } = req.query;
     const relations = expand.split(',').length > 0 ? expand.split(',') : undefined;
     const patientCpf = cpf ? cpf : undefined;
+    let startDate, endDate;
+
+    if (start && end) {
+      startDate = moment(start)
+        .startOf('date')
+        .toDate();
+      endDate = moment(end)
+        .endOf('date')
+        .toDate();
+    } else if (start) {
+      startDate = moment(start)
+        .startOf('date')
+        .toDate();
+      endDate = moment()
+        .endOf('date')
+        .toDate();
+    }
+
     let query = pickBy(
       {
+        relations,
         patientCpf,
-        relations
+        where: pickBy(
+          {
+            date: startDate && endDate ? Between(startDate, endDate) : undefined
+          },
+          identity
+        )
       },
       identity
     );

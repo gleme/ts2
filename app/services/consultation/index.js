@@ -16,7 +16,7 @@ export async function create(patientCpf, physicianCpf, prescription, procedures,
       date: date.toISOString()
     };
     const { data } = await axios.post('/consultation', consultation);
-    return { protocol: data.protocol };
+    return { protocol: data.protocol, ...consultation };
   } catch (error) {
     throw error;
   }
@@ -37,7 +37,17 @@ export async function findAll(expand) {
   }
 }
 
+export async function find(params) {
+  try {
+    const { data } = await axios.get('/consultation', { params });
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export default {
   create,
-  findAll
+  findAll,
+  find
 };

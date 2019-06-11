@@ -1,4 +1,4 @@
-import { Form, Input, Select, Button, DatePicker, Spin, message } from 'antd';
+import { Form, Input, Select, Button, DatePicker, Spin, Modal } from 'antd';
 import { debounce, set } from 'lodash';
 import moment from 'moment';
 import produce from 'immer';
@@ -35,6 +35,8 @@ class ConsultationForm extends React.Component {
         value: [],
         fetching: false
       },
+      visible: true,
+      editMode: false,
       confirmDirty: false
     };
     this.lastFetchId = 0;
@@ -47,30 +49,6 @@ class ConsultationForm extends React.Component {
     // To disabled submit button at the beginning.
     this.props.form.validateFields();
   }
-
-  handleSubmit = e => {
-    e.preventDefault();
-    this.props.form.validateFieldsAndScroll(async (err, values) => {
-      if (!err) {
-        const { patientCpf, physicianCpf, prescription, date } = values;
-        const procedures = values.procedures.map(({ key }) => ({ code: key }));
-        const diagnosis = values.diagnosis.map(({ key }) => ({ code: key }));
-        try {
-          const { protocol } = await consultationService.create(
-            patientCpf,
-            physicianCpf,
-            prescription,
-            procedures,
-            diagnosis,
-            date.toDate()
-          );
-          message.success(`Protocol ${protocol} created.`);
-        } catch (error) {
-          message.error('Could not create consultation: ', error);
-        }
-      }
-    });
-  };
 
   handleConfirmBlur = e => {
     const value = e.target.value;
@@ -144,7 +122,7 @@ class ConsultationForm extends React.Component {
 
   handleValidateCPF = async (rule, value, callback) => {
     const { field } = rule;
-    
+
     if (value) {
       this.setState(
         produce(draft => {
@@ -174,8 +152,11 @@ class ConsultationForm extends React.Component {
   };
 
   render() {
-    const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
+    const { visible, editMode, form, onCancel, onOk } = this.props;
     const { patientCpf, physicianCpf, diagnosis, procedures } = this.state;
+    const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = form;
+    const title = (editMode ? 'Edit ' : 'New ') + 'Consultation';
+    const buttonText = editMode ? 'Update' : 'Create';
     const patientCpfError = (isFieldTouched('patientCpf') && getFieldError('patientCpf')) || '';
     const physicianCpfError =
       (isFieldTouched('physicianCpf') && getFieldError('physicianCpf')) || '';
@@ -208,110 +189,114 @@ class ConsultationForm extends React.Component {
     };
 
     return (
-      <Form {...formItemLayout} onSubmit={this.handleSubmit} layout="horizontal">
-        <Form.Item
-          label="Patient CPF"
-          hasFeedback
-          validateStatus={patientCpf.validateStatus}
-          help={patientCpfError}
-        >
-          {getFieldDecorator('patientCpf', {
-            initialValue: '',
-            validateTrigger: 'onBlur',
-            rules: [
-              { required: true, message: 'Please input a patient CPF!' },
-              { validator: this.handleValidateCPF }
-            ]
-          })(<Input />)}
-        </Form.Item>
-        <Form.Item
-          label="Physician CPF"
-          hasFeedback
-          validateStatus={physicianCpf.validateStatus}
-          help={physicianCpfError}
-        >
-          {getFieldDecorator('physicianCpf', {
-            initialValue: '',
-            validateTrigger: 'onBlur',
-            rules: [
-              { required: true, message: 'Please input a physician CPF!' },
-              { validator: this.handleValidateCPF }
-            ]
-          })(<Input />)}
-        </Form.Item>
-        <Form.Item
-          label="Prescription"
-          help={prescriptionError}
-          validateStatus={prescriptionError ? 'error' : ''}
-        >
-          {getFieldDecorator('prescription', {
-            initialValue: '',
-            rules: [{ required: true, message: 'Please input a prescription!' }]
-          })(<Input.TextArea autosize={{ minRows: 2, maxRows: 6 }} />)}
-        </Form.Item>
-        <Form.Item
-          label="CID-10"
-          help={diagnosisError}
-          validateStatus={diagnosisError ? 'error' : ''}
-        >
-          {getFieldDecorator('diagnosis', {
-            initialValue: [],
-            rules: [{ required: true, message: 'Please input a diagnosis!' }]
-          })(
-            <Select
-              mode="multiple"
-              labelInValue
-              value={diagnosis.value}
-              placeholder="Select diasease"
-              notFoundContent={diagnosis.fetching ? <Spin size="small" /> : null}
-              filterOption={false}
-              onSearch={this.fetchDiagnosis}
-              onChange={(value, target) => this.handleChange(value, target, 'diagnosis')}
-              style={{ width: '100%' }}
-            >
-              {diagnosis.data.map(d => (
-                <Option key={d.value}>{d.text}</Option>
-              ))}
-            </Select>
-          )}
-        </Form.Item>
-        <Form.Item
-          label="Procedures"
-          help={proceduresError}
-          validateStatus={proceduresError ? 'error' : ''}
-        >
-          {getFieldDecorator('procedures', {
-            initialValue: [],
-            rules: [{ required: true, message: 'Please input a procedure!' }]
-          })(
-            <Select
-              mode="multiple"
-              labelInValue
-              value={procedures.value}
-              placeholder="Select procedure"
-              notFoundContent={procedures.fetching ? <Spin size="small" /> : null}
-              filterOption={false}
-              onSearch={this.fetchProcedures}
-              onChange={(value, target) => this.handleChange(value, target, 'diagnosis')}
-              style={{ width: '100%' }}
-            >
-              {procedures.data.map(d => (
-                <Option key={d.value}>{d.text}</Option>
-              ))}
-            </Select>
-          )}
-        </Form.Item>
-        <Form.Item label="Date">
-          {getFieldDecorator('date', {
-            initialValue: moment()
-          })(<DatePicker />)}
-        </Form.Item>
-        <Form.Item {...tailFormItemLayout}>
-          <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>
-            Create
-          </Button>
-        </Form.Item>
-      </Form>
+      <Modal
+        visible={visible}
+        title={title}
+        okText={buttonText}
+        okButtonProps={{ disabled: hasErrors(getFieldsError()) }}
+        onOk={onOk}
+        onCancel={onCancel}
+      >
+        <Form {...formItemLayout} onSubmit={this.handleSubmit} layout="horizontal">
+          <Form.Item
+            label="Patient CPF"
+            hasFeedback
+            validateStatus={patientCpf.validateStatus}
+            help={patientCpfError}
+          >
+            {getFieldDecorator('patientCpf', {
+              initialValue: '',
+              validateTrigger: 'onBlur',
+              rules: [
+                { required: true, message: 'Please input a patient CPF!' },
+                { validator: this.handleValidateCPF }
+              ]
+            })(<Input />)}
+          </Form.Item>
+          <Form.Item
+            label="Physician CPF"
+            hasFeedback
+            validateStatus={physicianCpf.validateStatus}
+            help={physicianCpfError}
+          >
+            {getFieldDecorator('physicianCpf', {
+              initialValue: '',
+              validateTrigger: 'onBlur',
+              rules: [
+                { required: true, message: 'Please input a physician CPF!' },
+                { validator: this.handleValidateCPF }
+              ]
+            })(<Input />)}
+          </Form.Item>
+          <Form.Item
+            label="Prescription"
+            help={prescriptionError}
+            validateStatus={prescriptionError ? 'error' : ''}
+          >
+            {getFieldDecorator('prescription', {
+              initialValue: '',
+              rules: [{ required: true, message: 'Please input a prescription!' }]
+            })(<Input.TextArea autosize={{ minRows: 2, maxRows: 6 }} />)}
+          </Form.Item>
+          <Form.Item
+            label="CID-10"
+            help={diagnosisError}
+            validateStatus={diagnosisError ? 'error' : ''}
+          >
+            {getFieldDecorator('diagnosis', {
+              initialValue: [],
+              rules: [{ required: true, message: 'Please input a diagnosis!' }]
+            })(
+              <Select
+                mode="multiple"
+                labelInValue
+                value={diagnosis.value}
+                placeholder="Select diasease"
+                notFoundContent={diagnosis.fetching ? <Spin size="small" /> : null}
+                filterOption={false}
+                onSearch={this.fetchDiagnosis}
+                onChange={(value, target) => this.handleChange(value, target, 'diagnosis')}
+                style={{ width: '100%' }}
+              >
+                {diagnosis.data.map(d => (
+                  <Option key={d.value}>{d.text}</Option>
+                ))}
+              </Select>
+            )}
+          </Form.Item>
+          <Form.Item
+            label="Procedures"
+            help={proceduresError}
+            validateStatus={proceduresError ? 'error' : ''}
+          >
+            {getFieldDecorator('procedures', {
+              initialValue: [],
+              rules: [{ required: true, message: 'Please input a procedure!' }]
+            })(
+              <Select
+                mode="multiple"
+                labelInValue
+                value={procedures.value}
+                placeholder="Select procedure"
+                notFoundContent={procedures.fetching ? <Spin size="small" /> : null}
+                filterOption={false}
+                onSearch={this.fetchProcedures}
+                onChange={(value, target) => this.handleChange(value, target, 'diagnosis')}
+                style={{ width: '100%' }}
+              >
+                {procedures.data.map(d => (
+                  <Option key={d.value}>{d.text}</Option>
+                ))}
+              </Select>
+            )}
+          </Form.Item>
+          <Form.Item label="Date">
+            {getFieldDecorator('date', {
+              initialValue: moment()
+            })(<DatePicker />)}
+          </Form.Item>
+        </Form>
+      </Modal>
     );
   }
 }
