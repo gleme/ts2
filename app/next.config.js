@@ -21,6 +21,14 @@ module.exports = () => {
       config.plugins.push(new webpack.EnvironmentPlugin(localEnv));
       return config;
     },
+    webpackDevMiddleware: config => {
+      // Solve compiling problem via vagrant
+      config.watchOptions = {
+        poll: 1000, // Check for changes every second
+        aggregateTimeout: 300 // delay before rebuilding
+      };
+      return config;
+    },
     lessLoaderOptions: {
       javascriptEnabled: true,
       modifyVars: themeVariables // make your antd custom effective
