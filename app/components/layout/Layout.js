@@ -1,5 +1,5 @@
 import Footer from './Footer';
-import Header from './Header';
+// import Header from './Header';
 import Sider from './Sider';
 import { Layout, Breadcrumb } from 'antd';
 const { Content } = Layout;
@@ -12,7 +12,7 @@ export default function layout(props) {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider />
       <Layout>
-        <Header />
+        {/* <Header /> */}
         <Content style={{ padding: '0 50px', backgroundColor: 'white', flex: '1 0 auto' }}>
           {/* <Breadcrumb style={{ margin: '16px 0' }}>
             {pages.map(page =>

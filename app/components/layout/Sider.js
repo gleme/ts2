@@ -11,7 +11,7 @@ function sider() {
   return (
     <Sider>
       <div className="logo">
-        <img src="../../static/images/80x80.png" />
+        {/* <img src="../../static/images/80x80.png" /> */}
         <Title level={3}>STAGIOP-BD</Title>
       </div>
       <style jsx>{`

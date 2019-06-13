@@ -5,11 +5,6 @@ const pages = [
     icon: 'home'
   },
   {
-    label: 'Patient',
-    path: '/patient',
-    icon: 'user'
-  },
-  {
     label: 'Consultation',
     path: '/consultation',
     icon: 'reconciliation'
