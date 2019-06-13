@@ -44,7 +44,7 @@ function renderSiderMenuItem(page) {
         </Link>
       }
     >
-      {children.map(child => renderSiderMenu(child))}
+      {children.map(child => renderSiderMenuItem(child))}
     </SubMenu>
   ) : (
     <Item key={path}>

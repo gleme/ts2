@@ -97,7 +97,7 @@ class ScreeningForm extends Component {
               ]
             })(<Input />)}
           </Form.Item>
-          {screeningService.questions.map(({ subtitle, title, inputName }, index) => (
+          {screeningService.questions.map(({ subtitle, title, inputName }) => (
             <Fragment key={inputName}>
               <Form.Item style={{ marginBottom: 0 }}>
                 {getFieldDecorator(inputName, { initialValue: false })(
