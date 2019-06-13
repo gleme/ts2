@@ -1,4 +1,5 @@
 const express = require('express');
+const { pickBy, identity } = require('lodash');
 const moment = require('moment');
 const router = express.Router();
 const { Screening } = require('../../domain/model/screening');
@@ -6,15 +7,29 @@ const { injectRepository } = require('../../middlewares/repository');
 
 router.all('*', injectRepository(Screening));
 
+function notEmpty(object) {
+  const filtered = pickBy(object, identity);
+  const { length } = Object.keys(filtered);
+  return length > 0 ? filtered : undefined;
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    const { cpf } = req.query;
-    let query = req.app.locals.repository.createQueryBuilder('screening').where('1 = 1');
-    if (cpf) {
-      query = query.andWhere('screening.patientCpf = :cpf', { cpf });
-    }
-    const screenings = await query.getMany();
-    res.status(200).json(screenings);
+    const { cpf, expand } = req.query;
+    const relations = expand.split(',').length > 0 ? expand.split(',') : undefined;
+    let query = notEmpty({
+      relations,
+      where: notEmpty({
+        patient: notEmpty({ cpf })
+      })
+    });
+    const screenings = await req.app.locals.repository.find(query);
+
+    const screeningWithInfo = screenings.map(screening => ({
+      ...screening,
+      score: screening.calculateMeaslesScore()
+    }));
+    res.status(200).json(screeningWithInfo);
   } catch (error) {
     next(error);
   }
@@ -53,8 +68,10 @@ router.post('/', async (req, res, next) => {
       isConvulsion,
       isEarInfection
     );
-    await req.app.locals.repository.save(screening);
-    res.status(200).end();
+    const { status, message, description } = screening.calculateMeaslesScore();
+    const { measlesRate } = screening;
+    const { id } = await req.app.locals.repository.save(screening);
+    res.status(200).json({ id, score: { message, status, description }, measlesRate });
   } catch (error) {
     next(error);
   }
