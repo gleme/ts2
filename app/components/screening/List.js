@@ -41,7 +41,7 @@ const columns = [
 ];
 
 export default class ScreeningList extends Component {
-  onChange = (pagination, filters, sorter) => {};
+  onChange = () => {};
 
   render() {
     const { screenings, selectedKeys, onSelectChange } = this.props;

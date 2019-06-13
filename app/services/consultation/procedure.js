@@ -11,7 +11,7 @@ export async function find(params) {
 
 export async function findAll() {
   try {
-    const params = await axios.get('/consultation/procedure');
+    const { data } = await axios.get('/consultation/procedure');
     return data;
   } catch (error) {
     throw error;
