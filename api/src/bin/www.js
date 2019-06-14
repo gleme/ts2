@@ -6,9 +6,11 @@ require('@babel/polyfill');
 const util = require('util');
 const { createConnection, getConnectionOptions } = require('typeorm');
 const { MongoClient } = require('mongodb');
+const { Kafka } = require('kafkajs');
 let { retry, parallel } = require('async');
 const { port, env } = require('../config/api.config');
 const mongoConfig = require('../config/mongo.config');
+const kafkaConfig = require('../config/kafka.config');
 const app = require('../app');
 const http = require('http');
 const { getLogger } = require('../services/logger.service');
@@ -31,9 +33,10 @@ process.on('uncaughtException', () => {
   }
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   try {
-    app.locals.mysqlDb.close();
+    await app.locals.mysqlDb.close();
+    await app.locals.mongoDb.close();
     server.close();
   } catch (error) {
     throw error;
@@ -77,6 +80,16 @@ server.on('error', onError);
         } catch (error) {
           callback(error);
         }
+      },
+      kafka: async callback => {
+        try {
+          const producer = await createKafkaProducer();
+          logger.info(`connected to kafka instance kafka://${kafkaConfig.brokers}`);
+          app.locals.kafkaProducer = producer;
+          callback();
+        } catch (error) {
+          callback(error);
+        }
       }
     });
 
@@ -111,15 +124,6 @@ function onError(error) {
     default:
       throw error;
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-function onListening() {
-  const addr = server.address();
-  const bind = typeof addr === 'string' ? addr : addr.port;
-  logger.info(`'stagiop-ts2-api' started on ${addr.address}:${bind} - environment: ${env}`);
 }
 
 /**
@@ -169,6 +173,27 @@ async function createMySQLPool() {
     return connectionPool;
   } catch (error) {
     logger.fatal('cannot stablish connection to MySQL database');
+    throw error;
+  }
+}
+
+async function createKafkaProducer() {
+  try {
+    const { brokers, clientId } = kafkaConfig;
+    const kafka = new Kafka({
+      clientId,
+      brokers: brokers.split(',')
+    });
+    const producer = kafka.producer();
+    await retry({ times: 5, interval: 2000 }, async callback => {
+      producer
+        .connect()
+        .then(() => callback())
+        .catch(error => callback(error));
+    });
+    return producer;
+  } catch (error) {
+    logger.fatal('could not stablish connection to Kafka');
     throw error;
   }
 }

@@ -4,6 +4,7 @@ const router = express.Router();
 const { Physician } = require('../../domain/model/physician');
 const { MedicalSpecialty } = require('../../domain/model/medical-specialty');
 const { injectRepository } = require('../../middlewares/repository');
+const { publishMessage } = require('../../middlewares/event-message');
 const specialtyRouter = require('./medical-specialty');
 const { check, validationResult } = require('express-validator/check');
 
@@ -120,7 +121,6 @@ router.post(
           code: In(specialties.map(spec => spec.code))
         }
       });
-
       const physician = new Physician(
         cpf,
         name,
@@ -131,8 +131,8 @@ router.post(
         crm,
         specialtiesObj
       );
-
       await req.app.locals.repository.save(physician);
+      await publishMessage('det_medico', Physician, req.app.locals.kafkaProducer, physician);
       res.status(200).end();
     } catch (error) {
       next(error);

@@ -5,6 +5,7 @@ const moment = require('moment');
 const router = express.Router();
 const { MedicalConsultation } = require('../../domain/model/medical-consultation');
 const { injectRepository } = require('../../middlewares/repository');
+const { publishMessage } = require('../../middlewares/event-message');
 const {
   MedicalDiagnosisRepository
 } = require('../../domain/repository/medical-diagnosis-repository');
@@ -34,8 +35,9 @@ router.post('/', async (req, res, next) => {
       procedures,
       cid10
     );
-    const { protocol } = await req.app.locals.repository.save(consultation);
-    res.status(200).json({ protocol });
+    const consult = await req.app.locals.repository.save(consultation);
+    publishMessage(MedicalConsultation, req.app.locals.kafkaProducer, consult);
+    res.status(200).json({ protocol: consult.protocol });
   } catch (error) {
     next(error);
   }
