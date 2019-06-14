@@ -1,14 +1,17 @@
 import { Menu, Icon, Layout, Typography } from 'antd';
-
+import Link from 'next/link';
+import pages from './pages';
 const { Sider } = Layout;
-const { SubMenu } = Menu;
+const { SubMenu, Item } = Menu;
 const { Title } = Typography;
+
 // style={{ position: 'flex', alignItems: 'center', justifyContent: 'center' }}
+
 function sider() {
   return (
     <Sider>
       <div className="logo">
-        <img src="../../static/images/80x80.png" />
+        {/* <img src="../../static/images/80x80.png" /> */}
         <Title level={3}>STAGIOP-BD</Title>
       </div>
       <style jsx>{`
@@ -19,50 +22,39 @@ function sider() {
           justify-content: center;
         }
       `}</style>
-      <Menu
-        style={{ width: 256, height: '100%' }}
-        defaultSelectedKeys={['1']}
-        defaultOpenKeys={['sub1']}
-        mode="inline"
-      >
-        <Menu.Item key="1">
-          <Icon type="home" />
-          Home
-        </Menu.Item>
-        <Menu.Item key="2">
-          <Icon type="user" />
-          Patient
-        </Menu.Item>
-        <SubMenu
-          key="sub1"
-          title={
-            <span>
-              <Icon type="reconciliation" />
-              <span>Consultation</span>
-            </span>
-          }
-        >
-          <Menu.Item key="3">New</Menu.Item>
-          <Menu.Item key="4">Search</Menu.Item>
-        </SubMenu>
-        <SubMenu
-          key="sub2"
-          title={
-            <span>
-              <Icon type="exception" />
-              <span>Screening</span>
-            </span>
-          }
-        >
-          <Menu.Item key="7">New</Menu.Item>
-          <Menu.Item key="8">Search</Menu.Item>
-        </SubMenu>
-        <Menu.Item key="4">
-          <Icon type="monitor" />
-          Diagnosis
-        </Menu.Item>
+      <Menu style={{ width: 256, height: '100%' }} mode="inline">
+        {/* defaultSelectedKeys={['1']} */}
+        {pages.map(page => renderSiderMenuItem(page))}
       </Menu>
     </Sider>
+  );
+}
+
+function renderSiderMenuItem(page) {
+  const { children, path, icon, label } = page;
+  return children ? (
+    <SubMenu
+      key={path}
+      title={
+        <Link href={path}>
+          <span>
+            {icon && <Icon type={icon} />}
+            {label}
+          </span>
+        </Link>
+      }
+    >
+      {children.map(child => renderSiderMenuItem(child))}
+    </SubMenu>
+  ) : (
+    <Item key={path}>
+      <Link href={path}>
+        <span>
+          {icon && <Icon type={icon} />}
+          {label}
+        </span>
+      </Link>
+    </Item>
   );
 }
 

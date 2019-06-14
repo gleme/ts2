@@ -18,7 +18,6 @@ class ConsultationForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      validate: true,
       patientCpf: {
         validateStatus: ''
       },

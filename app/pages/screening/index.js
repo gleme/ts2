@@ -5,88 +5,80 @@ import {
   Dropdown,
   Icon,
   Input,
-  Menu,
+  Typography,
   message,
+  Menu,
   Modal,
   notification,
-  Row,
-  Typography
+  Row
 } from 'antd';
+import ScreeningForm from '../../components/screening/Form';
+import ScreeningList from '../../components/screening/List';
 import LoadingSpinner from '../../components/feedback/LoadingSpinner';
-import ConsultationForm from '../../components/consultation/Form';
-import ConsultationList from '../../components/consultation/List';
-import consultationService from '../../services/consultation';
-
+import screeningService from '../../services/screening';
 const { Title } = Typography;
 const { confirm } = Modal;
 const { Search } = Input;
 
-export default class Consultation extends Component {
+export default class Screening extends Component {
   state = {
     loading: false,
     visible: false,
     editMode: false,
-    consultations: [],
+    screenings: [],
     selected: []
   };
 
   componentDidMount() {
-    this.loadConsultations();
+    this.loadScreenings();
   }
 
-  loadConsultations = () => {
+  loadScreenings = () => {
     this.setState({ loading: true });
-    consultationService
-      .findAll(['patient', 'physician'])
-      .then(consultations => {
-        this.setState({ consultations });
+    screeningService
+      .findAll(['patient'])
+      .then(screenings => {
+        this.setState({ screenings, loading: false });
       })
       .catch(error => {
         notification.error({
           message: 'Error to load screenings',
           description: error.message
         });
-      })
-      .finally(() => {
         this.setState({ loading: false });
       });
-  };
-
-  saveFormRef = formRef => {
-    this.formRef = formRef;
-  };
-
-  handleCreate = () => {
-    this.setState({ visible: true });
   };
 
   handleCancel = () => {
     this.setState({ visible: false });
   };
 
+  handleSelectChange = selected => {
+    this.setState({ selected });
+  };
+
   handleOk = () => {
     const { form } = this.formRef.props;
     form.validateFieldsAndScroll(async (error, values) => {
       if (!error) {
-        const { patientCpf, physicianCpf, prescription, date } = values;
-        const procedures = values.procedures.map(({ key }) => ({ code: key }));
-        const diagnosis = values.diagnosis.map(({ key }) => ({ code: key }));
+        const { patientCpf, date, ...flags } = values;
         try {
-          const consultation = await consultationService.create(
-            patientCpf,
-            physicianCpf,
-            prescription,
-            procedures,
-            diagnosis,
-            date.toDate()
-          );
-          const consultations = this.state.consultations.slice();
-          consultations.push(consultation);
+          this.setState({ loading: true });
+          const screening = await screeningService.create(patientCpf, date.toDate(), flags);
+          const { score } = screening;
+          message.success(`Screening ${screening.id} created.`);
+          notification[score.status]({
+            message: score.message,
+            description: score.description
+          });
+          const newScreenings = this.state.screenings.slice();
+          newScreenings.push(screening);
+          this.setState({ screenings: newScreenings });
           form.resetFields();
-          this.setState({ visible: false, consultations });
-          message.success(`Protocol ${consultation.protocol} created.`);
         } catch (error) {
-          message.error('Could not create consultation: ', error);
+          message.error('Could not create consultation: ' + error);
+        } finally {
+          this.setState({ visible: false, loading: false });
         }
       }
     });
@@ -95,23 +87,21 @@ export default class Consultation extends Component {
   handleDeleteSelected = () => {
     const { selected } = this.state;
     confirm({
-      title: 'Are you sure you want to delete these consultations?',
-      content: `This action will permanently delete ${selected.length} consultations.`,
+      title: 'Are you sure you want to delete these screenings?',
+      content: `This action will permanently delete ${selected.length} screenigs.`,
       okText: 'Yes',
       okType: 'danger',
       cancelText: 'No',
       onOk: async () => {
         try {
           this.setState({ loading: true });
-          await consultationService.deleteAll(selected);
-          message.success(`Successfully deleted ${selected.length} consultations.`);
-          const newConsultations = this.state.consultations.filter(
-            scr => !selected.includes(scr.id)
-          );
-          this.setState({ consultations: newConsultations, selected: [] });
+          await screeningService.deleteAll(selected);
+          message.success(`Successfully deleted ${selected.length} screenings.`);
+          const newScreenings = this.state.screenings.filter(scr => !selected.includes(scr.id));
+          this.setState({ screenings: newScreenings, selected: [] });
         } catch (error) {
           console.error('error', error);
-          message.error('Failed to delete selected consultations.');
+          message.error('Failed to delete selected screenings.');
         } finally {
           this.setState({ loading: false });
         }
@@ -122,21 +112,26 @@ export default class Consultation extends Component {
   handleSearch = async value => {
     try {
       this.setState({ loading: true });
-      const consultations = await consultationService.find({
-        patientCpf: value,
-        expand: 'patient,physician'
-      });
-      this.setState({ consultations });
+      const screenings = await screeningService.find({ cpf: value, expand: 'patient' });
+      this.setState({ screenings });
     } catch (error) {
       console.error('error', error);
-      message.error('Failed to load consultations.');
+      message.error('Failed to load screenings.');
     } finally {
       this.setState({ loading: false });
     }
   };
 
+  handleCreate = () => {
+    this.setState({ visible: true });
+  };
+
+  saveFormRef = formRef => {
+    this.formRef = formRef;
+  };
+
   render() {
-    const { loading, editMode, visible, consultations, selected } = this.state;
+    const { loading, visible, editMode, screenings, selected } = this.state;
     const hasSelected = selected.length > 0;
     const actionsMenu = (
       <Menu>
@@ -150,13 +145,12 @@ export default class Consultation extends Component {
         </Menu.Item>
       </Menu>
     );
-
     return (
       <Fragment>
         {loading && <LoadingSpinner />}
         <div style={{ textAlign: 'center', width: '100%', marginBottom: '10px' }}>
-          <Title level={2}>Consultations</Title>
-          <img src="../../static/images/medical-consultation.png" width="100" />
+          <Title level={2}>Measles Screening</Title>
+          <img src="../../static/images/medical-history.png" width="100" />
         </div>
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col span={4}>
@@ -168,7 +162,7 @@ export default class Consultation extends Component {
             </Dropdown>
           </Col>
           <Col span={2}>
-            <Button icon="reload" onClick={this.loadConsultations} />
+            <Button icon="reload" onClick={this.loadScreenings} />
           </Col>
           <Col span={18}>
             <Search
@@ -180,8 +174,8 @@ export default class Consultation extends Component {
           </Col>
         </Row>
         <div style={{ margin: 'auto', width: '100%' }}>
-          <ConsultationList
-            consultations={consultations}
+          <ScreeningList
+            screenings={screenings}
             onSelectChange={this.handleSelectChange}
             selectedKeys={selected}
           />
@@ -189,7 +183,7 @@ export default class Consultation extends Component {
             {hasSelected ? `${selected.length} screening(s) selected` : 'No screening selected'}
           </span>
         </div>
-        <ConsultationForm
+        <ScreeningForm
           wrappedComponentRef={this.saveFormRef}
           visible={visible}
           editMode={editMode}
