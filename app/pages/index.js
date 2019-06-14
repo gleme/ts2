@@ -13,7 +13,10 @@ export default class Index extends Component {
         <Title level={3} style={{ textAlign: 'center' }}>
           SCRUM Team #2 - Physician
         </Title>
-        <img src="../static/images/doctor-bg.png" />
+        <img
+          src="../static/images/doctor-bg.png"
+          style={{ display: 'block', margin: '50px auto', height: '50%' }}
+        />
       </Fragment>
     );
   }
