@@ -1,4 +1,5 @@
-import { Form, Input, Select, Button, DatePicker, Spin, Modal } from 'antd';
+import { Component } from 'react';
+import { Form, Input, Select, DatePicker, Spin, Modal } from 'antd';
 import { debounce, set } from 'lodash';
 import moment from 'moment';
 import produce from 'immer';
@@ -6,7 +7,6 @@ import { findByDiasease } from '../../services/consultation/diagnosis';
 import procedureService from '../../services/consultation/procedure';
 import patientService from '../../services/patient';
 import physicianService from '../../services/physician';
-import consultationService from '../../services/consultation';
 
 const { Option } = Select;
 
@@ -14,11 +14,10 @@ function hasErrors(fieldsErrors) {
   return Object.keys(fieldsErrors).some(field => fieldsErrors[field]);
 }
 
-class ConsultationForm extends React.Component {
+class ConsultationForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      validate: true,
       patientCpf: {
         validateStatus: ''
       },
@@ -36,8 +35,7 @@ class ConsultationForm extends React.Component {
         fetching: false
       },
       visible: true,
-      editMode: false,
-      confirmDirty: false
+      editMode: false
     };
     this.lastFetchId = 0;
     this.lastFetchId2 = 0;
@@ -49,11 +47,6 @@ class ConsultationForm extends React.Component {
     // To disabled submit button at the beginning.
     this.props.form.validateFields();
   }
-
-  handleConfirmBlur = e => {
-    const value = e.target.value;
-    this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-  };
 
   fetchDiagnosis = value => {
     this.lastFetchId++;
@@ -175,18 +168,6 @@ class ConsultationForm extends React.Component {
         sm: { span: 16 }
       }
     };
-    const tailFormItemLayout = {
-      wrapperCol: {
-        xs: {
-          span: 24,
-          offset: 0
-        },
-        sm: {
-          span: 16,
-          offset: 8
-        }
-      }
-    };
 
     return (
       <Modal
@@ -197,7 +178,12 @@ class ConsultationForm extends React.Component {
         onOk={onOk}
         onCancel={onCancel}
       >
-        <Form {...formItemLayout} onSubmit={this.handleSubmit} layout="horizontal">
+        <Form
+          {...formItemLayout}
+          onSubmit={this.handleSubmit}
+          layout="horizontal"
+          styles={{ width: '100%' }}
+        >
           <Form.Item
             label="Patient CPF"
             hasFeedback

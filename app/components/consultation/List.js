@@ -41,10 +41,10 @@ const columns = [
 ];
 
 export default class ConsultationList extends Component {
-  onChange = (pagination, filters, sorter) => {};
+  onChange = () => {};
 
   render() {
-    const { consultations } = this.props;
+    const { consultations, selectedKeys, onSelectChange } = this.props;
     const tableData = consultations.map(({ protocol, patient, physician, diagnosis, date }) => ({
       key: protocol,
       protocol,
@@ -56,6 +56,13 @@ export default class ConsultationList extends Component {
         return acc;
       }, '')
     }));
-    return <Table columns={columns} dataSource={tableData} onChange={this.onChange} />;
+    return (
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        onChange={this.onChange}
+        rowSelection={{ selectedRowKeys: selectedKeys, onChange: onSelectChange }}
+      />
+    );
   }
 }

@@ -46,6 +46,20 @@ export async function find(params) {
   }
 }
 
+export async function remove(id) {
+  try {
+    const response = await axios.delete(`/consultation/${id}`);
+    return response.status === 204;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteAll(ids) {
+  try {
+  } catch (error) {}
+}
+
 export default {
   create,
   findAll,
