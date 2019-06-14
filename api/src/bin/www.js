@@ -114,15 +114,6 @@ function onError(error) {
 }
 
 /**
- * Event listener for HTTP server "listening" event.
- */
-function onListening() {
-  const addr = server.address();
-  const bind = typeof addr === 'string' ? addr : addr.port;
-  logger.info(`'stagiop-ts2-api' started on ${addr.address}:${bind} - environment: ${env}`);
-}
-
-/**
  *  Create MongoDB Connection Pool
  */
 async function createMongoPool() {
