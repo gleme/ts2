@@ -1,7 +1,13 @@
 const express = require('express');
+const { Between } = require('typeorm');
+const { pickBy, identity } = require('lodash');
+const moment = require('moment');
 const router = express.Router();
 const { MedicalConsultation } = require('../../domain/model/medical-consultation');
 const { injectRepository } = require('../../middlewares/repository');
+const {
+  MedicalDiagnosisRepository
+} = require('../../domain/repository/medical-diagnosis-repository');
 const diagnosisRouter = require('./diagnosis');
 const procedureRouter = require('./procedure');
 
@@ -12,16 +18,24 @@ router.use('/procedure', procedureRouter);
 
 router.post('/', async (req, res, next) => {
   try {
-    const { date, prescription, patient, physician, procedures } = req.body;
+    const { date, prescription, patient, physician, procedures, diagnosis } = req.body;
+    const diagnosisRepo = new MedicalDiagnosisRepository(req.app.locals.mongoDb);
+
+    const cid10 = [];
+    for (let d of diagnosis) {
+      const code = await diagnosisRepo.findByCode(d.code);
+      cid10.push(code);
+    }
     const consultation = new MedicalConsultation(
       date,
       prescription,
       patient,
       physician,
-      procedures
+      procedures,
+      cid10
     );
-    await req.app.locals.repository.save(consultation);
-    res.status(200).end();
+    const { protocol } = await req.app.locals.repository.save(consultation);
+    res.status(200).json({ protocol });
   } catch (error) {
     next(error);
   }
@@ -29,7 +43,41 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const consultations = await req.app.locals.repository.find();
+    const { cpf, expand, start, end } = req.query;
+    const relations = expand.split(',').length > 0 ? expand.split(',') : undefined;
+    const patientCpf = cpf ? cpf : undefined;
+    let startDate, endDate;
+
+    if (start && end) {
+      startDate = moment(start)
+        .startOf('date')
+        .toDate();
+      endDate = moment(end)
+        .endOf('date')
+        .toDate();
+    } else if (start) {
+      startDate = moment(start)
+        .startOf('date')
+        .toDate();
+      endDate = moment()
+        .endOf('date')
+        .toDate();
+    }
+
+    let query = pickBy(
+      {
+        relations,
+        patientCpf,
+        where: pickBy(
+          {
+            date: startDate && endDate ? Between(startDate, endDate) : undefined
+          },
+          identity
+        )
+      },
+      identity
+    );
+    const consultations = await req.app.locals.repository.find(query);
     res.status(200).json(consultations);
   } catch (error) {
     next(error);
@@ -38,9 +86,12 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:protocol', async (req, res, next) => {
   try {
+    const { expand } = req.query;
     const { protocol } = req.params;
-    const consultation = await req.app.locals.repository.findOne(protocol);
-    res.status(200).json(consultation);
+    const relations = expand.split(',').length > 0 ? expand.split(',') : undefined;
+    const query = pickBy({ relations }, identity);
+    const consultation = await req.app.locals.repository.findOne(protocol, query);
+    consultation ? res.status(200).json(consultation) : res.status(404).end();
   } catch (error) {
     next(error);
   }

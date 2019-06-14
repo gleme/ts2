@@ -27,6 +27,7 @@ app.use(log4js.connectLogger(logger));
 app.use('/consultation', require('./routes/consultation'));
 app.use('/patient', require('./routes/patient'));
 app.use('/physician', require('./routes/physician'));
+app.use('/screening', require('./routes/screening'));
 
 app.get('/ping', (req, res) => {
   res.status(200).end();
