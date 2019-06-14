@@ -1,5 +1,9 @@
+import async from 'async';
+import { Promise } from 'bluebird';
 import { pickBy, identity } from 'lodash';
 import axios from '../axios';
+
+Promise.promisifyAll(async);
 
 export async function create(patientCpf, physicianCpf, prescription, procedures, diagnosis, date) {
   try {
@@ -53,11 +57,6 @@ export async function remove(id) {
   } catch (error) {
     throw error;
   }
-}
-
-export async function deleteAll(ids) {
-  try {
-  } catch (error) {}
 }
 
 export default {
