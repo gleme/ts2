@@ -1,18 +1,19 @@
 import Footer from './Footer';
-import Header from './Header';
+// import Header from './Header';
 import Sider from './Sider';
-import { Layout, Breadcrumb } from 'antd';
+import { Layout } from 'antd';
+// import { Breadcrumb } from 'antd';
 const { Content } = Layout;
 
 // const BreadcrumbItem = Breadcrumb.Item;
 // style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
 export default function layout(props) {
-  const { pages } = props;
+  // const { pages } = props;
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider />
       <Layout>
-        <Header />
+        {/* <Header /> */}
         <Content style={{ padding: '0 50px', backgroundColor: 'white', flex: '1 0 auto' }}>
           {/* <Breadcrumb style={{ margin: '16px 0' }}>
             {pages.map(page =>
