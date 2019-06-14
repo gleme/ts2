@@ -1,4 +1,5 @@
-import { Form, Input, Select, Button, DatePicker, Spin, Modal } from 'antd';
+import { Component } from 'react';
+import { Form, Input, Select, DatePicker, Spin, Modal } from 'antd';
 import { debounce, set } from 'lodash';
 import moment from 'moment';
 import produce from 'immer';
@@ -6,7 +7,6 @@ import { findByDiasease } from '../../services/consultation/diagnosis';
 import procedureService from '../../services/consultation/procedure';
 import patientService from '../../services/patient';
 import physicianService from '../../services/physician';
-import consultationService from '../../services/consultation';
 
 const { Option } = Select;
 
@@ -14,7 +14,7 @@ function hasErrors(fieldsErrors) {
   return Object.keys(fieldsErrors).some(field => fieldsErrors[field]);
 }
 
-class ConsultationForm extends React.Component {
+class ConsultationForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -172,18 +172,6 @@ class ConsultationForm extends React.Component {
       wrapperCol: {
         xs: { span: 24 },
         sm: { span: 16 }
-      }
-    };
-    const tailFormItemLayout = {
-      wrapperCol: {
-        xs: {
-          span: 24,
-          offset: 0
-        },
-        sm: {
-          span: 16,
-          offset: 8
-        }
       }
     };
 

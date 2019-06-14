@@ -41,7 +41,7 @@ const columns = [
 ];
 
 export default class ConsultationList extends Component {
-  onChange = (pagination, filters, sorter) => {};
+  onChange = () => {};
 
   render() {
     const { consultations } = this.props;
