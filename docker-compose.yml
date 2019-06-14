@@ -56,6 +56,8 @@ services:
       - TYPEORM_LOGGING=true
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_HOST=${MONGODB_HOST}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_PROCESS_CLIEND_ID=${KAFKA_PROCESS_CLIEND_ID}
     ports:
       - 5000:5000
 
@@ -68,3 +70,22 @@ services:
     volumes:
       - ./app:/usr/ts2/app
       - /usr/ts2/app/node_modules
+
+  consumer:
+    depends_on:
+      - api
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./kafka-consumer
+    volumes:
+      - ./kafka-consumer:/usr/ts2/kafka-consumer
+      - /usr/ts2/kafka-consumer/node_modules
+    environment:
+      - KAFKA_CLIENTID=ts2-consumer-app
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_GROUPID=ts2-group
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
