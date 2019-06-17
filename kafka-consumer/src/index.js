@@ -27,6 +27,8 @@ const run = async () => {
           const { type } = schema;
           if (type === 'medicalconsultation') {
             await insertMedicalConsultation(connection, schema);
+          } else if (type === 'screening') {
+            await insertScreening(connection, schema);
           }
           console.log('inserted on database');
         } catch (error) {
@@ -66,6 +68,71 @@ async function insertMedicalConsultation(connection, message) {
         updatedDate,
         cns_pat_cpf,
         cns_phy_cpf
+      ]
+    );
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function insertScreening(connection, message) {
+  const {
+    scr_id,
+    scr_reddish_spots,
+    scr_fever,
+    scr_cough,
+    scr_malaise,
+    scr_conjuctivitis,
+    scr_coryza,
+    scr_loss_of_appetite,
+    scr_white_spots,
+    scr_diarrhea,
+    scr_convulsion,
+    scr_ear_infection,
+    scr_percentage,
+    scr_date,
+    pat_cpf
+  } = message;
+
+  const date = moment(moment(scr_date).format('YYYY-MM-DD HH:mm:ss')).toDate();
+
+  try {
+    const result = await connection.query(
+      `
+      INSERT INTO screening(
+        scr_id,
+        scr_reddish_spots,
+        scr_fever,
+        scr_cough,
+        scr_malaise,
+        scr_conjuctivitis,
+        scr_coryza,
+        scr_loss_of_appetite,
+        scr_white_spots,
+        scr_diarrhea,
+        scr_convulsion,
+        scr_ear_infection,
+        scr_percentage,
+        scr_date,
+        pat_cpf) 
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [
+        scr_id,
+        scr_reddish_spots,
+        scr_fever,
+        scr_cough,
+        scr_malaise,
+        scr_conjuctivitis,
+        scr_coryza,
+        scr_loss_of_appetite,
+        scr_white_spots,
+        scr_diarrhea,
+        scr_convulsion,
+        scr_ear_infection,
+        scr_percentage,
+        date,
+        pat_cpf
       ]
     );
     return result;

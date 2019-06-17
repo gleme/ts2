@@ -160,6 +160,44 @@ class Screening {
     }
     return null;
   }
+
+  static toMessage(screening: Screening) {
+    const {
+      patient,
+      id,
+      date,
+      isReddish,
+      isFever,
+      isCough,
+      isMalaise,
+      isConjuctivitis,
+      isCoryza,
+      isLossAppetite,
+      isWhiteSpots,
+      isDiarrehea,
+      isConvulsion,
+      isEarInfection,
+      measlesRate
+    } = screening;
+    return JSON.stringify({
+      type: 'screening',
+      scr_id: id,
+      scr_reddish_spots: isReddish,
+      scr_fever: isFever,
+      scr_cough: isCough,
+      scr_malaise: isMalaise,
+      scr_conjuctivitis: isConjuctivitis,
+      scr_coryza: isCoryza,
+      scr_loss_of_appetite: isLossAppetite,
+      scr_white_spots: isWhiteSpots,
+      scr_diarrhea: isDiarrehea,
+      scr_convultion: isConvulsion,
+      scr_ear_infection: isEarInfection,
+      scr_percentage: measlesRate,
+      scr_date: date,
+      pat_cpf: patient
+    });
+  }
 }
 
 module.exports = {

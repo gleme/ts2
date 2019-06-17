@@ -4,6 +4,7 @@ const moment = require('moment');
 const router = express.Router();
 const { Screening } = require('../../domain/model/screening');
 const { injectRepository } = require('../../middlewares/repository');
+const { publishMessage } = require('../../middlewares/event-message');
 
 router.all('*', injectRepository(Screening));
 
@@ -71,6 +72,7 @@ router.post('/', async (req, res, next) => {
     const { status, message, description } = screening.calculateMeaslesScore();
     const { measlesRate } = screening;
     const { id } = await req.app.locals.repository.save(screening);
+    publishMessage(Screening, req.app.locals.kafkaProducer, screening);
     res.status(200).json({ id, score: { message, status, description }, measlesRate });
   } catch (error) {
     next(error);
