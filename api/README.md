@@ -99,3 +99,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 ...
+
+# Pull request example
+
+Read the [PULL REQUEST](./.github/pull_request_template.md) template before opening a pull request and make sure you filled up all info.
