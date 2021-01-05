@@ -33,7 +33,7 @@
     "antd": "^3.16.6",
     "antd-mask-input": "^0.1.6",
     "async": "^3.0.1",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "babel-plugin-import": "^1.11.0",
     "bluebird": "^3.5.5",
     "dotenv": "^8.0.0",
